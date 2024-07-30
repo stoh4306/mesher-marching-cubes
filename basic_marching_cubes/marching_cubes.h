@@ -11,11 +11,14 @@ public:
 
 	bool loadVolumeData(const char* filename);
 
-	void generateSurfaceMesh(float isoValue);
+	void generateSurfaceMesh(float isoValue, float cutValue);
 	unsigned char findCubeIndex(unsigned int i, unsigned int j, unsigned int k, float isoValue, float* gridValue);
 	mg::Vector3f vertexInterp(float isoValue, mg::Vector3f p1, mg::Vector3f p2, float valp1, float valp2);
 
+	void generateSurfaceMesh_cuda(float isoValue, float cutValue, const char* filename);
+
 	bool exportMeshInObj(const char* filename);
+	bool exportMeshInObj(const char* filename, unsigned int numVer, float* vertex, unsigned int numTri, unsigned int* triangle);
 
 public:
 	mg::Vector3f		center_;

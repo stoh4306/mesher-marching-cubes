@@ -1,9 +1,52 @@
 #include "marching_cubes.h"
 #include <fstream>
 #include <algorithm>
+#include <ctime>
+
+bool MarchingCubes::exportMeshInObj(const char* filename, unsigned int numVertex, float* vertex, unsigned int numTri, unsigned int* triangle)
+{
+	float stime = clock();
+
+	std::ofstream outFile(filename);
+
+	if (!outFile.is_open())
+	{
+		std::cerr << "ERROR! Can't open " << filename << " for writing" << std::endl;
+		return false;
+	}
+
+	//unsigned int numVertex = (unsigned int)vertex_.size();
+
+	for (unsigned int i = 0; i < numVertex; ++i)
+	{
+		outFile << "v " << vertex[3*i+0] << " " << vertex[3*i+1] << " " << vertex[3*i+2] << "\n";
+	}
+
+	//unsigned int numTri = (unsigned int)triangle_.size();
+
+	for (unsigned int i = 0; i < numTri; ++i)
+	{
+		outFile << "f "
+			<< triangle[3*i+0] + 1 << " "
+			<< triangle[3*i+1] + 1 << " "
+			<< triangle[3*i+2] + 1 << " \n";
+	}
+
+	outFile.close();
+
+	float ftime = clock();
+
+	std::cout << "- Mesh exported : " << filename << "..." << (ftime-stime)/CLOCKS_PER_SEC << " sec" << std::endl;
+	//std::cout << "- Mesh exported : " << filename << " (#v=" << numVertex
+	//    << ",#t=" << numTri << ")" << std::endl;
+
+	return true;
+}
 
 bool MarchingCubes::exportMeshInObj(const char* filename)
 {
+	float stime = clock();
+
 	std::ofstream outFile(filename);
 
 	if (!outFile.is_open())
@@ -30,7 +73,9 @@ bool MarchingCubes::exportMeshInObj(const char* filename)
 
 	outFile.close();
 
-	std::cout << "- Mesh exported : " << filename << std::endl;
+	float ftime = clock();
+
+	std::cout << "- Mesh exported : " << filename << "..." << (ftime - stime) / CLOCKS_PER_SEC << " sec" << std::endl;
 	//std::cout << "- Mesh exported : " << filename << " (#v=" << numVertex
 	//    << ",#t=" << numTri << ")" << std::endl;
 
@@ -94,8 +139,11 @@ mg::Vector3f MarchingCubes::vertexInterp( float isoValue, mg::Vector3f p1, mg::V
 	return p;
 }
 
-void MarchingCubes::generateSurfaceMesh(float isoValue)
+void MarchingCubes::generateSurfaceMesh(float isoValue, float CUT_VAL)
 {
+	float stime = clock();
+	std::cout << "- Extracting mesh...";
+
 	const unsigned int nx = volumeSize_.x;
 	const unsigned int ny = volumeSize_.y;
 	const unsigned int nz = volumeSize_.z;
@@ -124,7 +172,10 @@ void MarchingCubes::generateSurfaceMesh(float isoValue)
 		// Find the cube index for the current voxel=
 		unsigned char cubeindex = findCubeIndex(i, j, k, isoValue, gv.data());
 
-		if (edgeTable_[cubeindex] == 0) continue;
+		if (fabs(gv[0]) >= CUT_VAL || fabs(gv[1]) >= CUT_VAL || fabs(gv[2]) >= CUT_VAL ||
+			fabs(gv[3]) >= CUT_VAL || fabs(gv[4]) >= CUT_VAL || fabs(gv[5]) >= CUT_VAL ||
+			fabs(gv[6]) >= CUT_VAL || fabs(gv[7]) >= CUT_VAL 
+			|| edgeTable_[cubeindex] == 0) continue;
 
 		// Now, the current is a surface cell
 		//std::fill(vertlist.begin(), vertlist.end(), mg::Vector3f(0.0, 0.0, 0.0));
@@ -180,13 +231,15 @@ void MarchingCubes::generateSurfaceMesh(float isoValue)
 			triIndex	+= 1;
 		}
 	}
+	float ftime = clock();
+	std::cout << "done..." << (ftime - stime) / CLOCKS_PER_SEC << " sec" << std::endl;
 }
 
 bool MarchingCubes::loadVolumeData(const char* filename)
 {
-	std::cout << "- Reading volume data : " << filename << "...";
+	std::cout << "- Reading volume data : " << filename << "..." << std::flush;
 
-	std::ifstream inFile(filename);
+	std::ifstream inFile(filename, std::ios::binary);
 	if (!inFile.is_open())
 	{
 		std::cout << "Error, can't load the volume data : " << filename << std::endl;
