@@ -2,6 +2,8 @@
 
 #include "marching_cubes.h"
 
+#define HAS_CUDA
+
 int main(int argc, char** argv)
 {
 	if (argc <= 5)
@@ -26,9 +28,11 @@ int main(int argc, char** argv)
 	MarchingCubes mc;
 	mc.loadVolumeData(tsdf_file);
 
+#ifdef HAS_CUDA
 	if(useCUDA)
 		mc.generateSurfaceMesh_cuda(isoValue, cutValue, outmesh_file);
 	else
+#endif
 	{
 		mc.generateSurfaceMesh(isoValue, cutValue);
 		mc.exportMeshInObj(outmesh_file);
