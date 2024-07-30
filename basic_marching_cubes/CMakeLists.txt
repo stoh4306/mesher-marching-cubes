@@ -15,3 +15,4 @@ if(BUILD_CUDA)
 else()
 	add_executable(basic_marching_cubes
  			${PROJECT_SOURCE_DIR}/main.cpp ${PROJECT_SOURCE_DIR}/marching_cubes.cpp)
+endif()
