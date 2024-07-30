@@ -2,7 +2,7 @@
 
 #include "marching_cubes.h"
 
-#define HAS_CUDA
+//#define HAS_CUDA
 
 int main(int argc, char** argv)
 {
